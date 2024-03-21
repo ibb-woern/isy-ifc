@@ -1,3 +1,4 @@
+from math import sqrt
 from pathlib import Path
 import ifcopenshell
 from ifcopenshell.api import run
@@ -43,28 +44,54 @@ def _setup_ifc() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
 
 
 def main():
-    # Your main code goes here
-    start_manhole = Manhole(0.0, 0.0, 450.0, 455.0)
-    end_manhole = Manhole(35.0, 35.0, 449.0, 454.0)
-    pipe_section = PipeSection(start_manhole, end_manhole, diameter_inner=0.3)
+    manholes = [
+        Manhole("Start", 0.0, 0.0, 450.0, 455.0),
+        Manhole("End", 35.0, 35.0, 449.0, 454.0)
+    ]
+
+    pipe_sections = [
+        PipeSection(manholes[0].name, manholes[0], manholes[1], 300, 320),
+    ]
 
     # start ifc creation
     model, body = _setup_ifc()
 
     profile_circle = model.create_entity("IfcCircleProfileDef", ProfileName="DN1000", ProfileType="AREA",
                                          Radius=1)
-    manhole_entity = run("root.create_entity", model,
-                         ifc_class="IfcDistributionChamberElement", name="Manhole 1",)
-    # change object placement to matrix (5,3,1)
-    matrix = numpy.eye(4)
-    matrix[:, 3][0:3] = (2, 3, 5)
-    run("geometry.edit_object_placement", model,
-        product=manhole_entity, matrix=matrix, is_si=True)
-    # create representation. Extrude the circle profile by the height of 5 meters
-    representation = run("geometry.add_profile_representation",
-                         model, context=body, profile=profile_circle, depth=5)
-    run("geometry.assign_representation", model, product=manhole_entity,
-        representation=representation)
+    for ml in manholes:
+        manhole_entity = run("root.create_entity", model,
+                             ifc_class="IfcDistributionChamberElement", name=ml.name,)
+        matrix = numpy.eye(4)
+        matrix[:, 3][0:3] = (ml.x, ml.y, ml.z)
+        run("geometry.edit_object_placement", model,
+            product=manhole_entity, matrix=matrix, is_si=True)
+        representation = run("geometry.add_profile_representation",
+                             model, context=body, profile=profile_circle, depth=ml.z_top - ml.z)
+        run("geometry.assign_representation", model, product=manhole_entity,
+            representation=representation)
+
+    profile_dn300sb = model.create_entity("IfcCircleHollowProfileDef", ProfileName="300SB", ProfileType="AREA",
+                                          Radius=0.15, WallThickness=0.1)
+
+    for ps in pipe_sections:
+        pipe_section_entity = run("root.create_entity", model,
+                                  ifc_class="IfcPipeSegment", name=ps.name)
+        matrix = numpy.eye(4)
+        matrix[:, 3][0:3] = (ps.start.x, ps.start.y, ps.start.z)
+        extrusion_vector = (ps.end.x - ps.start.x, ps.end.y -
+                            ps.start.y, ps.end.z - ps.start.z)
+        # length
+        extrusion_length = sqrt(
+            extrusion_vector[0]**2 + extrusion_vector[1]**2 + extrusion_vector[2]**2)
+        # apply extrusion vector
+        matrix[0:3, 2] = extrusion_vector
+
+        run("geometry.edit_object_placement", model,
+            product=pipe_section_entity, matrix=matrix, is_si=True)
+        representation = run("geometry.add_profile_representation",
+                             model, context=body, profile=profile_dn300sb, depth=extrusion_length)
+        run("geometry.assign_representation", model, product=pipe_section_entity,
+            representation=representation)
 
     model.write(Path.cwd().joinpath("output") / "test.ifc")
 
