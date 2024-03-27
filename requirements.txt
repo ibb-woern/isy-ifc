@@ -2,3 +2,7 @@ ifcopenshell
 numpy
 lark
 mathutils
+click
+lxml
+polars
+ezodf

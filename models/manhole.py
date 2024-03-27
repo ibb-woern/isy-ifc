@@ -1,3 +1,9 @@
+from dataclasses import dataclass
+from typing import Optional
+from models.types import StatusType, SystemType, ManholeFormType, MaterialType
+
+
+@dataclass
 class Manhole:
     """Representing a manhole in a sewer network.
 
@@ -7,11 +13,26 @@ class Manhole:
         y (float): The y-coordinate of the center.
         z (float): The z-coordinate of the center on pipe level.
         z_top (float): The z-coordinate of the top of the manhole(cover).
+        status (StatusType, optional): The status of the manhole.
+        system (SystemType, optional): The sewer system the manhole belongs to.
+        form (ManholeFormType, optional): The form of the manhole.
+        coverplate (bool, optional): Whether the manhole has a cover plate.
+        cone (bool, optional): Whether the manhole has a cone.
+        size_a (float, optional): Size A of the manhole. For round manholes this is the diameter.
+        size_b (float, optional): Size B of the manhole.
+        material (MaterialType, optional): The material of the manhole.
     """
 
-    def __init__(self, name: str, x: float, y: float, z: float, z_top: float):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.z = z
-        self.z_top = z_top
+    name: str
+    x: float
+    y: float
+    z: float
+    z_top: float
+    status: Optional[StatusType] = None
+    system: Optional[SystemType] = None
+    form: Optional[ManholeFormType] = None
+    coverplate: Optional[bool] = None
+    cone: Optional[bool] = None
+    size_a: Optional[float] = None
+    size_b: Optional[float] = None
+    material: Optional[MaterialType] = None
