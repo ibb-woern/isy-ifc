@@ -144,7 +144,7 @@ class ChuteType(Enum):
 
 
 # Based on https://www.bfr-abwasser.de/html/A7-8-2Stammdaten.html#1704540
-class ConnectionType(Enum):
+class ConnectionPointType(Enum):
     GENERAL = "AP"
     GUTTER = "ER"
     BUILDING = "GA"
@@ -152,10 +152,10 @@ class ConnectionType(Enum):
     INLET = "SE"
     UNKNOWN = "NN"
     RAINWATER_UTILIZATION = "AV"
-    "Pipe end closed" = "RV"
-    "Drainage point inside building" = "EG"
-    "Floor drain" = "BA"
-    "Channel inflow" = "ZG"
-    "Drainage, beginning" = "DR"
-    "Channel point" = "GP"
-    "External abutment" = "AS"
+    PIPE_END_CLOSED = "RV"
+    PIPE_END_BUILDING = "EG"
+    FLOOR_DRAIN = "BA"
+    TRENCH_INFLOW = "ZG"
+    DRAINAGE_BEGINNING = "DR"
+    TRENCH_POINT = "GP"
+    EXTERNAL_DIVERSION = "AS"  # not sure about that "Außenliegender Untersturz"
