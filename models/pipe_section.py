@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 from models.manhole import Manhole
-from models.types import ProfileType
+from models.types import ProfileType, StatusType, SystemType
 from models.types import MaterialType
 
 
@@ -19,6 +19,8 @@ class PipeSection:
         x_2 (Optional[float]): X-coordinate of an alternative end point (not implemented).
         y_2 (Optional[float]): Y-coordinate of an alternative end point (not implemented).
         z_2 (Optional[float]): Z-coordinate of an alternative end point (not implemented).
+        status (Optional[StatusType]): The status of the pipe section (default: None).
+        system (Optional[SystemType]): The sewer system the pipe section belongs to (default: None).
         profile (ProfileType): The profile type of the pipe section (default: ProfileType.CIRCULAR).
         diameter_inner (float): The inner diameter of the pipe section.
         diameter_outer (Optional[float]): The outer diameter of the pipe section (default: None).
@@ -34,7 +36,9 @@ class PipeSection:
     x_2: Optional[float] = None
     y_2: Optional[float] = None
     z_2: Optional[float] = None
+    status: Optional[StatusType] = None
+    system: Optional[SystemType] = None
     profile: ProfileType = ProfileType.CIRCULAR
-    diameter_inner: float
+    diameter_inner: float = None
     diameter_outer: Optional[float] = None
     material: Optional[MaterialType] = None

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
+
 from models.types import StatusType, SystemType, ManholeFormType, MaterialType
 
 
@@ -36,3 +37,7 @@ class Manhole:
     nominal_length: Optional[float] = None
     nominal_width: Optional[float] = None
     material: Optional[MaterialType] = None
+
+    def __post_init__(self):
+        # Explicitly cast the name attribute to string to prevent later issues with the ifcopenshell root.create_entity function
+        self.name = str(self.name)
