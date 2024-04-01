@@ -4,5 +4,4 @@ lark
 mathutils
 click
 lxml
-polars
-ezodf
+openpyxl
