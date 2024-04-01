@@ -18,8 +18,8 @@ class Manhole:
         form (ManholeFormType, optional): The form of the manhole.
         coverplate (bool, optional): Whether the manhole has a cover plate.
         cone (bool, optional): Whether the manhole has a cone.
-        size_a (float, optional): Size A of the manhole. For round manholes this is the diameter.
-        size_b (float, optional): Size B of the manhole.
+        nominal_length (float, optional): Length of the manhole. For round manholes this is the diameter.
+        nominal_width (float, optional): width of the manhole.
         material (MaterialType, optional): The material of the manhole.
     """
 
@@ -33,6 +33,6 @@ class Manhole:
     form: Optional[ManholeFormType] = None
     coverplate: Optional[bool] = None
     cone: Optional[bool] = None
-    size_a: Optional[float] = None
-    size_b: Optional[float] = None
+    nominal_length: Optional[float] = None
+    nominal_width: Optional[float] = None
     material: Optional[MaterialType] = None
