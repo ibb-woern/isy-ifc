@@ -9,6 +9,18 @@ def _profile_exists(model, profile_name):
     return False
 
 
+def _assign_container(model, entity):
+    # TODO: Proper assignments. Currently only one is supported.
+    container = model.by_type("IfcFacility")[0]
+    if not container:
+        container = model.by_type("IfcBuilding")[0]
+
+    if not container:
+        raise ValueError("No container found to assign the entity to")
+
+    run("spatial.assign_container", model, relating_structure=container, product=entity)
+
+
 def manhole(manhole: Manhole, model, context):
     # First check if all relevant information is available
     if not manhole.x or not manhole.y or not manhole.z or not manhole.z_top:
@@ -52,6 +64,9 @@ def manhole(manhole: Manhole, model, context):
         ifc_class="IfcDistributionChamberElement",
         name=manhole.name,
     )
+
+    # Assign the entity to the tree
+    _assign_container(model, manhole_entity)
 
     # Set the placement of the manhole
     matrix = numpy.eye(4)

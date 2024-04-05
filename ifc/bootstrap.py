@@ -1,5 +1,5 @@
 import ifcopenshell
-from ifcopenshell.api import run as _run
+from ifcopenshell.api import run
 
 
 def setup() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
@@ -7,19 +7,19 @@ def setup() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
 
     # Create the IFC hierarchy
     # PROJECT CREATION NEEDS TO BE DONE FIRST
-    project = _run("root.create_entity", model, ifc_class="IfcProject", name="Isy IFC")
+    project = run("root.create_entity", model, ifc_class="IfcProject", name="Isy IFC")
 
-    site = _run("root.create_entity", model, ifc_class="IfcSite", name="Isy IFC site")
-    _run("aggregate.assign_object", model, relating_object=project, product=site)
+    site = run("root.create_entity", model, ifc_class="IfcSite", name="Isy IFC site")
+    run("aggregate.assign_object", model, relating_object=project, product=site)
 
-    facility = _run(
+    facility = run(
         "root.create_entity", model, ifc_class="IfcFacility", name="Isy IFC facility"
     )
-    _run("aggregate.assign_object", model, relating_object=site, product=facility)
+    run("aggregate.assign_object", model, relating_object=site, product=facility)
 
     # Setup the context for the model
-    model3d = _run("context.add_context", model, context_type="Model")
-    body = _run(
+    model3d = run("context.add_context", model, context_type="Model")
+    body = run(
         "context.add_context",
         model,
         context_type="Model",
@@ -29,7 +29,7 @@ def setup() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
     )
 
     # Setup units
-    length = _run("unit.add_si_unit", model, unit_type="LENGTHUNIT")  # meters
-    _run("unit.assign_unit", model, units=[length])
+    length = run("unit.add_si_unit", model, unit_type="LENGTHUNIT")  # meters
+    run("unit.assign_unit", model, units=[length])
 
     return model, body
