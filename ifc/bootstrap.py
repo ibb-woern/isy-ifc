@@ -32,4 +32,8 @@ def setup() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
     length = run("unit.add_si_unit", model, unit_type="LENGTHUNIT")  # meters
     run("unit.assign_unit", model, units=[length])
 
+    # TODO: Implement proper georeferencing while respecting user input
+    run("georeference.add_georeferencing", model)
+    run("georeference.edit_georeferencing", model, projected_crs={"Name": "EPSG:25832"})
+
     return model, body

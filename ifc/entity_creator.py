@@ -2,11 +2,17 @@ import numpy
 from models.manhole import Manhole
 from models.types import ManholeFormType
 from ifcopenshell.api import run
+from ifcopenshell.entity_instance import entity_instance
+from typing import Union
 
 
-def _profile_exists(model, profile_name):
-    # Todo: Implement a proper check if the profile already exists
-    return False
+def _find_profile(model, profile_name) -> Union[None, entity_instance]:
+    profiles = model.by_type("IfcProfileDef")
+    for profile in profiles:
+        # ProfileName is the second attribute. Somehow profile.Name does not work.
+        if profile[1] == profile_name:
+            return profile
+    return None
 
 
 def _assign_container(model, entity):
@@ -17,8 +23,12 @@ def _assign_container(model, entity):
 
     if not container:
         raise ValueError("No container found to assign the entity to")
-
-    run("spatial.assign_container", model, relating_structure=container, product=entity)
+    run(
+        "spatial.assign_container",
+        model,
+        relating_structure=container,
+        products=[entity],
+    )
 
 
 def manhole(manhole: Manhole, model, context):
@@ -33,23 +43,25 @@ def manhole(manhole: Manhole, model, context):
     # Check if shape is round or rectangular
     profile = None
     if manhole.form == ManholeFormType.RECTANGULAR:
-        profile_name = f"{manhole.nominal_length}x{manhole.nominal_width}"
-        if not _profile_exists(model, profile_name):
-            if not manhole.nominal_width:
-                manhole.nominal_width = manhole.nominal_length  # assume its a square
+        if not manhole.nominal_width:
+            manhole.nominal_width = manhole.nominal_length  # assume its a square
+        profile_name = f"{round(manhole.nominal_length * 1000)}x{round(manhole.nominal_width * 1000)}"
+        profile = _find_profile(model, profile_name)
+        if not profile:
             profile = model.create_entity(
                 "IfcRectangleProfileDef",
-                ProfileName=f"{manhole.nominal_length}x{manhole.nominal_width}",
+                ProfileName=profile_name,
                 ProfileType="AREA",
                 XDim=manhole.nominal_length,
                 YDim=manhole.nominal_width,
             )
     if manhole.form == ManholeFormType.CIRCULAR:
-        profile_name = f"DN{manhole.nominal_length}"
-        if not _profile_exists(model, profile_name):
+        profile_name = f"DN{round(manhole.nominal_length * 1000)}"
+        profile = _find_profile(model, profile_name)
+        if not profile:
             profile = model.create_entity(
                 "IfcCircleProfileDef",
-                ProfileName=f"{manhole.nominal_length}",
+                ProfileName=profile_name,
                 ProfileType="AREA",
                 Radius=manhole.nominal_length / 2,
             )
@@ -64,7 +76,6 @@ def manhole(manhole: Manhole, model, context):
         ifc_class="IfcDistributionChamberElement",
         name=manhole.name,
     )
-
     # Assign the entity to the tree
     _assign_container(model, manhole_entity)
 
