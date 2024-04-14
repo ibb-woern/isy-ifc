@@ -14,6 +14,7 @@ class Manhole:
         y (float): The y-coordinate of the center.
         z (float): The z-coordinate of the center on pipe level.
         z_top (float): The z-coordinate of the top of the manhole(cover).
+        depth (float, optional): The depth of the manhole.
         status (StatusType, optional): The status of the manhole.
         system (SystemType, optional): The sewer system the manhole belongs to.
         form (ManholeFormType, optional): The form of the manhole.
@@ -29,6 +30,7 @@ class Manhole:
     y: float
     z: float
     z_top: float
+    depth: Optional[float] = None
     status: Optional[StatusType] = None
     system: Optional[SystemType] = None
     form: Optional[ManholeFormType] = None
@@ -41,3 +43,10 @@ class Manhole:
     def __post_init__(self):
         # Explicitly cast the name attribute to string to prevent later issues with the ifcopenshell root.create_entity function
         self.name = str(self.name)
+        if not self.depth:
+            if self.z and self.z_top:
+                self.depth = self.z_top - self.z
+
+        if self.depth < 0:
+            print(f"Manhole {self.name} has a negative depth.")
+            self.depth = None

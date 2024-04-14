@@ -95,7 +95,7 @@ def manhole(manhole: Manhole, model, context):
         model,
         context=context,
         profile=profile,
-        depth=manhole.z_top - manhole.z,
+        depth=manhole.depth,
     )
     run(
         "geometry.assign_representation",
