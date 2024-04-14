@@ -1,5 +1,7 @@
 import ifcopenshell
 from ifcopenshell.api import run
+from ifcopenshell.entity_instance import entity_instance
+from typing import Union
 
 
 def setup() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
@@ -37,3 +39,28 @@ def setup() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
     run("georeference.edit_georeferencing", model, projected_crs={"Name": "EPSG:25832"})
 
     return model, body
+
+
+def find_profile(model, profile_name) -> Union[None, entity_instance]:
+    profiles = model.by_type("IfcProfileDef")
+    for profile in profiles:
+        # ProfileName is the second attribute. Somehow profile.Name does not work.
+        if profile[1] == profile_name:
+            return profile
+    return None
+
+
+def assign_container(model, entity):
+    # TODO: Proper assignments. Currently only one is supported.
+    container = model.by_type("IfcFacility")[0]
+    if not container:
+        container = model.by_type("IfcBuilding")[0]
+
+    if not container:
+        raise ValueError("No container found to assign the entity to")
+    run(
+        "spatial.assign_container",
+        model,
+        relating_structure=container,
+        products=[entity],
+    )
