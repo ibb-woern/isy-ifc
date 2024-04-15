@@ -33,7 +33,10 @@ def _create_row_dict(row, headers) -> dict:
 
 
 def _find_manhole_by_name(name: str, manholes: List[Manhole]) -> Union[Manhole, None]:
-    pass
+    for manhole in manholes:
+        if str(manhole.name) == str(name):
+            return manhole
+    return None
 
 
 def _manholes(ws: Worksheet) -> List[Manhole]:
@@ -42,7 +45,7 @@ def _manholes(ws: Worksheet) -> List[Manhole]:
     for row in ws.iter_rows(values_only=True, min_row=2):
         row_dict = _create_row_dict(row, headers)
         manhole = Manhole(
-            name=row_dict["ID_CUR"],
+            name=str(row_dict["ID_CUR"]),
             x=row_dict["POS_X"],
             y=row_dict["POS_Y"],
             z=row_dict["POS_Z"],
@@ -82,7 +85,7 @@ def _pipe_sections(ws: Worksheet, manholes: List[Manhole]) -> List[PipeSection]:
             diameter_outer = diameter_inner + 2 * wall_thickness
 
         sewer = PipeSection(
-            name=row_dict["ID_NAME"],
+            name=str(row_dict["ID_NAME"]),
             start=_find_manhole_by_name(row_dict["ID_DRAIN1"], manholes),
             end=_find_manhole_by_name(row_dict["ID_DRAIN2"], manholes),
             x_1=row_dict["ABS_1X"],

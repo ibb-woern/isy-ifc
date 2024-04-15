@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
+import numpy as np
+
 from models.types import StatusType, SystemType, ManholeFormType, MaterialType
 
 

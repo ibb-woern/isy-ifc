@@ -1,9 +1,16 @@
+import math
 import numpy
+import ifcopenshell
 from models.manhole import Manhole
 from models.types import ManholeFormType, ProfileType
 from models.pipe_section import PipeSection
 from ifcopenshell.api import run
-from ifc.common import find_profile, assign_container
+from ifc.common import (
+    calculate_rotation_angles,
+    construct_transformation_matrix,
+    find_profile,
+    assign_container,
+)
 
 
 def manhole(manhole: Manhole, model, context):
@@ -81,12 +88,16 @@ def manhole(manhole: Manhole, model, context):
 
 
 def sewer(sewer: PipeSection, model, context):
+    # Skip if start or end manhole is missing
+    if not sewer.start or not sewer.end:
+        return
+
     profile = None
     if sewer.profile == ProfileType.CIRCULAR:
         profile_name = f"DN{round(sewer.diameter_inner * 1000)}"
         profile = find_profile(model, profile_name)
         if not profile:
-            wall_thickness = 5  # default wall thickness
+            wall_thickness = 0.01  # default wall thickness
             if sewer.diameter_outer:
                 wall_thickness = sewer.diameter_outer - sewer.diameter_inner
             profile = model.create_entity(
@@ -107,48 +118,35 @@ def sewer(sewer: PipeSection, model, context):
         ifc_class="IfcPipeSegment",
         name=sewer.name,
     )
-    # Assign the entity to the tree
     assign_container(model, sewer_entity)
-    # Now we need to create the geometry. The process is as follows:
-    # Calculate the length of the pipe section using the from and to manholes coordinates.
-    # Calculate the direction vector of the pipe section using the from and to manholes coordinates.
-    # Use the from manhole coordinates as the start point of the pipe section.
-    # Extrude the given length.
-    # Rotate the extrusion to the direction vector.
 
-    # Calculate the length of the pipe section
-    length = numpy.sqrt(
+    # Calculate the length of the sewer and extrude using pythagoras.
+    length = math.sqrt(
         (sewer.start.x - sewer.end.x) ** 2
         + (sewer.start.y - sewer.end.y) ** 2
         + (sewer.start.z - sewer.end.z) ** 2
     )
-    # Calculate the direction vector
-    direction = numpy.array(
-        [
-            sewer.end.x - sewer.start.x,
-            sewer.end.y - sewer.start.y,
-            sewer.end.z - sewer.start.z,
-        ]
+
+    # Create identity matrix.
+    # rotation angles
+    rotations = calculate_rotation_angles(sewer.start, sewer.end)
+    matrix = construct_transformation_matrix(rotations)
+
+    # now change the identity matrix to match the start point and rotation
+    matrix[:, 3][0:3] = (sewer.start.x, sewer.start.y, sewer.start.z)
+
+    run(
+        "geometry.edit_object_placement",
+        model,
+        product=sewer_entity,
+        matrix=matrix,
     )
-    direction = direction / numpy.linalg.norm(direction)
-    # Set the placement of the pipe section
-    matrix = numpy.eye(4)
-    matrix[:, 3][0:3] = (sewer.startx, sewer.start.y, sewer.start.z)
     representation = run(
         "geometry.add_profile_representation",
         model,
         context=context,
         profile=profile,
         depth=length,
-    )
-    # modify the matrix to the direction vector
-    matrix[0:3, 0:3] = numpy.eye(3) - 2 * numpy.outer(direction, direction)
-    # rotate the extrusion to the direction vector
-    run(
-        "geometry.edit_object_placement",
-        model,
-        product=sewer_entity,
-        matrix=matrix,
     )
     run(
         "geometry.assign_representation",
