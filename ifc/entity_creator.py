@@ -1,16 +1,11 @@
 import math
 import numpy
-import ifcopenshell
 from models.manhole import Manhole
 from models.types import ManholeFormType, ProfileType
 from models.pipe_section import PipeSection
+import ifcopenshell
 from ifcopenshell.api import run
-from ifc.common import (
-    calculate_rotation_angles,
-    construct_transformation_matrix,
-    find_profile,
-    assign_container,
-)
+from ifc.common import assign_container, find_profile, extrusion_rotation_angles
 
 
 def manhole(manhole: Manhole, model, context):
@@ -126,11 +121,15 @@ def sewer(sewer: PipeSection, model, context):
         + (sewer.start.y - sewer.end.y) ** 2
         + (sewer.start.z - sewer.end.z) ** 2
     )
+    matrix = numpy.eye(4)
 
-    # Create identity matrix.
-    # rotation angles
-    rotations = calculate_rotation_angles(sewer.start, sewer.end)
-    matrix = construct_transformation_matrix(rotations)
+    rotation_x, rotation_y = extrusion_rotation_angles(
+        [sewer.start.x, sewer.start.y, sewer.start.z],
+        [sewer.end.x, sewer.end.y, sewer.end.z],
+    )
+
+    matrix = ifcopenshell.util.placement.rotation(rotation_x, "X") @ matrix
+    matrix = ifcopenshell.util.placement.rotation(rotation_y, "Y") @ matrix
 
     # now change the identity matrix to match the start point and rotation
     matrix[:, 3][0:3] = (sewer.start.x, sewer.start.y, sewer.start.z)
