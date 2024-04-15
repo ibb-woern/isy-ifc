@@ -1,4 +1,3 @@
-import math
 import ifcopenshell
 from ifcopenshell.api import run
 from ifcopenshell.entity_instance import entity_instance
