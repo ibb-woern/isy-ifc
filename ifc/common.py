@@ -74,7 +74,7 @@ def assign_container(model, entity):
     )
 
 
-def extrusion_rotation_angles(point1, point2):
+def extrusion_rotation_angles(point1: Point3D, point2: Point3D) -> tuple[float, float]:
     # Calculate the vector from point1 to point2
     vector = np.array(point2) - np.array(point1)
     # Calculate the angle between the vector and the Z axis
