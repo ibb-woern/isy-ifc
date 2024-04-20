@@ -12,6 +12,15 @@
       "console": "integratedTerminal",
       "args": ["./examples/ISYBAU_XML-2017-Stammdaten.xlsx"],
       "justMyCode": false // Important to make breakpoints work
+    },
+    {
+      "name": "XML import",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/main.py",
+      "console": "integratedTerminal",
+      "args": ["./examples/ISYBAU_XML-2017-Stammdaten.xml"],
+      "justMyCode": false // Important to make breakpoints work
     }
   ]
 }
