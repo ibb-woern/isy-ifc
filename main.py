@@ -12,7 +12,17 @@ from pathlib import Path
 def main(input_file: Path, output_file: Path = None):
     # Check if the file is an XML file. if so call the isybau parser
     if input_file.suffix == ".xml":
-        isybau.parse(input_file)
+        manholes, sewers = isybau.parse(input_file)
+        model, body = bootstrap.setup()
+        for manhole in manholes:
+            entity_creator.manhole(manhole, model, body)
+        for sewer in sewers:
+            entity_creator.sewer(sewer, model, body)
+        out_path = (
+            output_file
+            or Path.cwd().joinpath("output") / input_file.with_suffix(".ifc").name
+        )
+        model.write(out_path)
         return
 
     if input_file.suffix == ".xlsx":

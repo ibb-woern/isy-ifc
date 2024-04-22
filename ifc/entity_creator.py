@@ -86,6 +86,19 @@ def sewer(sewer: PipeSection, model, context):
     # Skip if start or end manhole is missing
     if not sewer.start or not sewer.end:
         return
+    # skip is any of the coordinates are missing
+    if (
+        not sewer.start.x
+        or not sewer.start.y
+        or not sewer.start.z
+        or not sewer.end.x
+        or not sewer.end.y
+        or not sewer.end.z
+    ):
+        return
+    # Skip if the diameter is missing
+    if not sewer.diameter_inner:
+        return
 
     profile = None
     if sewer.profile == ProfileType.CIRCULAR:

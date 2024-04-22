@@ -1,9 +1,12 @@
+import enum
 import ifcopenshell
 from ifcopenshell.api import run
 from ifcopenshell.entity_instance import entity_instance
-from typing import NamedTuple, Union
+from typing import List, NamedTuple, Type, Union
 
 import numpy as np
+
+from models.manhole import Manhole
 
 
 class Point3D(NamedTuple):
@@ -84,3 +87,17 @@ def extrusion_rotation_angles(point1: Point3D, point2: Point3D) -> tuple[float, 
     angle_x = np.degrees(angle_x)
     angle_y = np.degrees(angle_y)
     return angle_x, angle_y
+
+
+def try_match_enum(value: str, enum_type: Type[enum.Enum]) -> Union[enum.Enum, None]:
+    try:
+        return enum_type(value)
+    except ValueError:
+        return None
+
+
+def find_manhole_by_name(name: str, manholes: List[Manhole]) -> Union[Manhole, None]:
+    for manhole in manholes:
+        if str(manhole.name) == str(name):
+            return manhole
+    return None

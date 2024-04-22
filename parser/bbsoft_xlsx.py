@@ -1,10 +1,9 @@
 import os
 from typing import List, Union
-import enum
-from typing import Type
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
+from ifc.common import try_match_enum
 from models.types import (
     ManholeFormType,
     ProfileType,
@@ -14,13 +13,7 @@ from models.types import (
 )
 from models.manhole import Manhole
 from models.pipe_section import PipeSection
-
-
-def _try_match_enum(value: str, enum_type: Type[enum.Enum]) -> Union[enum.Enum, None]:
-    try:
-        return enum_type(value)
-    except ValueError:
-        return None
+from ifc.common import find_manhole_by_name
 
 
 def _create_row_dict(row, headers) -> dict:
@@ -30,13 +23,6 @@ def _create_row_dict(row, headers) -> dict:
         row_dict[headers[i]] = column
         i += 1
     return row_dict
-
-
-def _find_manhole_by_name(name: str, manholes: List[Manhole]) -> Union[Manhole, None]:
-    for manhole in manholes:
-        if str(manhole.name) == str(name):
-            return manhole
-    return None
 
 
 def _manholes(ws: Worksheet) -> List[Manhole]:
@@ -51,14 +37,14 @@ def _manholes(ws: Worksheet) -> List[Manhole]:
             z=row_dict["POS_Z"],
             z_top=row_dict["POS_ZLOW"],
             depth=row_dict["POS_DZ"],
-            status=_try_match_enum(row_dict["STATUS.KZ"], StatusType),
-            system=_try_match_enum(row_dict["TYP.KZ"], SystemType),
-            form=_try_match_enum(row_dict["FORM.KZ"], ManholeFormType),
+            status=try_match_enum(row_dict["STATUS.KZ"], StatusType),
+            system=try_match_enum(row_dict["TYP.KZ"], SystemType),
+            form=try_match_enum(row_dict["FORM.KZ"], ManholeFormType),
             coverplate=row_dict["COVERPLATE.KZ"],
             cone=row_dict["CONE.KZ"],
             nominal_length=row_dict["SIZE_A"],
             nominal_width=row_dict["SIZE_B"],
-            material=_try_match_enum(row_dict["MATERIAL.KZ"], MaterialType),
+            material=try_match_enum(row_dict["MATERIAL.KZ"], MaterialType),
         )
         manholes.append(manhole)
     return manholes
@@ -86,20 +72,20 @@ def _pipe_sections(ws: Worksheet, manholes: List[Manhole]) -> List[PipeSection]:
 
         sewer = PipeSection(
             name=str(row_dict["ID_NAME"]),
-            start=_find_manhole_by_name(row_dict["ID_DRAIN1"], manholes),
-            end=_find_manhole_by_name(row_dict["ID_DRAIN2"], manholes),
+            start=find_manhole_by_name(row_dict["ID_DRAIN1"], manholes),
+            end=find_manhole_by_name(row_dict["ID_DRAIN2"], manholes),
             x_1=row_dict["ABS_1X"],
             y_1=row_dict["ABS_1Y"],
             z_1=row_dict["ABS_1Z"],
             x_2=row_dict["ABS_2X"],
             y_2=row_dict["ABS_2Y"],
             z_2=row_dict["ABS_2Z"],
-            status=_try_match_enum(row_dict["STATUS.KZ"], StatusType),
-            system=_try_match_enum(row_dict["HYD_PRINCIP.KZ"], SystemType),
-            profile=_try_match_enum(row_dict["HYD_PROF.KZ"], ProfileType),
+            status=try_match_enum(row_dict["STATUS.KZ"], StatusType),
+            system=try_match_enum(row_dict["HYD_PRINCIP.KZ"], SystemType),
+            profile=try_match_enum(row_dict["HYD_PROF.KZ"], ProfileType),
             diameter_inner=diameter_inner,
             diameter_outer=diameter_outer,
-            material=_try_match_enum(row_dict["OTH_MATERIAL.KZ"], MaterialType),
+            material=try_match_enum(row_dict["OTH_MATERIAL.KZ"], MaterialType),
         )
         sewers.append(sewer)
 

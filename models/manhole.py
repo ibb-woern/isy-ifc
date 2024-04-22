@@ -47,6 +47,6 @@ class Manhole:
             if self.z and self.z_top:
                 self.depth = self.z_top - self.z
 
-        if self.depth < 0:
+        if self.depth and self.depth < 0:
             print(f"Manhole {self.name} has a negative depth.")
             self.depth = None
