@@ -18,7 +18,7 @@ The standard is well-documented, and [real-world examples](https://www.bfr-abwas
 
 # Roadmap
 
-- [ ] Remove xlsx import as it's not standardized and was only part of the early POC.
+- [x] Remove xlsx import as it's not standardized and was only part of the early POC.
 - [ ] Develop custom classes to encapsulate all relevant information from isybau:
   - [ ] Identify pertinent data structures (e.g., project, manhole, reach, lateral, "Bauwerk"...).
   - [ ] Create a parser for each data structure that accepts the corresponding XML element as input.
