@@ -2,10 +2,10 @@ import math
 import numpy
 from models.manhole import Manhole
 from models.types import ManholeFormType, ProfileType
-from models.pipe_section import PipeSection
+from models.sewer import Sewer
 import ifcopenshell
 from ifcopenshell.api import run
-from ifc.common import assign_container, find_profile, extrusion_rotation_angles
+from ifc.shared import assign_container, find_profile, extrusion_rotation_angles
 
 
 def manhole(manhole: Manhole, model, context):
@@ -82,7 +82,7 @@ def manhole(manhole: Manhole, model, context):
     )
 
 
-def sewer(sewer: PipeSection, model, context):
+def sewer(sewer: Sewer, model, context):
     # Skip if start or end manhole is missing
     if not sewer.start or not sewer.end:
         return

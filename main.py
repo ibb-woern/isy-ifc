@@ -1,6 +1,6 @@
 import click
 import parser.isybau as isybau
-import ifc.common as bootstrap
+import ifc.shared as bootstrap
 import ifc.entity_creator as entity_creator
 from pathlib import Path
 
