@@ -2,6 +2,7 @@ import enum
 import xmltodict
 from lxml import etree as ET
 from typing import Type, Union
+from isybau.datatype_resolver import DatatypeResolver
 
 
 def xml_get_tag_content(
@@ -32,5 +33,14 @@ def try_match_enum(value: str, enum_type: Type[enum.Enum]) -> Union[enum.Enum, N
 def xml_element_to_dict(element: ET.Element) -> dict:
     xml = ET.tostring(element)
     data = xmltodict.parse(xml)
+
+    if data["AbwassertechnischeAnlage"]:
+        data = data["AbwassertechnischeAnlage"]
+
+    resolver = DatatypeResolver()
+
+    # Loop over the dict. Only the first level is currently supported.
+    for key in data:
+        data[key] = resolver.resolve(key, data[key])
 
     return data

@@ -56,6 +56,15 @@ def manhole(manhole: Manhole, model, context):
     # Assign the entity to the tree
     assign_container(model, manhole_entity)
 
+    pset = run("pset.add_pset", model, product=manhole_entity, name="ISYBAU")
+    # This takes only the first level of the dictionary, for now.
+    properties = {}
+    for key, value in manhole.isybau_data.items():
+        if isinstance(value, list) or isinstance(value, dict):
+            continue
+        properties[key] = value
+    run("pset.edit_pset", model, pset=pset, properties=properties)
+
     # Set the placement of the manhole
     matrix = numpy.eye(4)
     matrix[:, 3][0:3] = (manhole.x, manhole.y, manhole.z)

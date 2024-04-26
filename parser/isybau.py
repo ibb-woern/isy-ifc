@@ -8,7 +8,7 @@ from models.manhole import Manhole
 from models.sewer import Sewer
 
 
-def _remove_namespace(file: os.PathLike) -> os.PathLike:
+def remove_namespace(file: os.PathLike) -> os.PathLike:
     parser = ET.XMLParser(remove_blank_text=True)
     tree = ET.parse(file, parser)
     root = tree.getroot()
@@ -34,7 +34,7 @@ def _remove_namespace(file: os.PathLike) -> os.PathLike:
 
 
 def parse(file_path: os.PathLike) -> tuple:
-    tree = ET.parse(_remove_namespace(file_path))
+    tree = ET.parse(remove_namespace(file_path))
     root = tree.getroot()
     manholes: List[Manhole] = []
     sewers: List[Sewer] = []
