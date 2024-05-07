@@ -71,8 +71,8 @@ def assign_container(model, entity):
     run(
         "spatial.assign_container",
         model,
+        product=entity,
         relating_structure=container,
-        products=[entity],
     )
 
 
