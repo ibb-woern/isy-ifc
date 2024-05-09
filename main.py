@@ -1,5 +1,5 @@
 import click
-import parser.isybau as isybau
+import isybau.parser as parser
 import ifc.shared as bootstrap
 import ifc.entity_creator as entity_creator
 from pathlib import Path
@@ -11,7 +11,7 @@ from pathlib import Path
 def main(input_file: Path, output_file: Path = None):
     # Check if the file is an XML file. if so call the isybau parser
     if input_file.suffix == ".xml":
-        manholes, sewers = isybau.parse(input_file)
+        manholes, sewers = parser.parse(input_file)
         model, body = bootstrap.setup()
         for manhole in manholes:
             entity_creator.manhole(manhole, model, body)

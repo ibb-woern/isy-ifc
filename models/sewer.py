@@ -5,7 +5,7 @@ from ifc.shared import find_manhole_by_name
 from models.manhole import Manhole
 from models.types import ProfileType, StatusType, SystemType
 from models.types import MaterialType
-from parser.shared import try_match_enum, xml_element_to_dict, xml_get_tag_content
+from isybau.lib import try_match_enum, xml_element_to_dict, xml_get_tag_content
 
 
 @dataclass

@@ -22,12 +22,12 @@ def setup() -> tuple[ifcopenshell.file, ifcopenshell.entity_instance]:
     project = run("root.create_entity", model, ifc_class="IfcProject", name="Isy IFC")
 
     site = run("root.create_entity", model, ifc_class="IfcSite", name="Isy IFC site")
-    run("aggregate.assign_object", model, relating_object=project, product=site)
+    run("aggregate.assign_object", model, relating_object=project, products=[site])
 
     facility = run(
         "root.create_entity", model, ifc_class="IfcFacility", name="Isy IFC facility"
     )
-    run("aggregate.assign_object", model, relating_object=site, product=facility)
+    run("aggregate.assign_object", model, relating_object=site, products=[facility])
 
     # Setup the context for the model
     model3d = run("context.add_context", model, context_type="Model")
@@ -71,7 +71,7 @@ def assign_container(model, entity):
     run(
         "spatial.assign_container",
         model,
-        product=entity,
+        products=[entity],
         relating_structure=container,
     )
 

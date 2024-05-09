@@ -2,7 +2,7 @@ import enum
 import xmltodict
 from lxml import etree as ET
 from typing import Type, Union
-from isybau.datatype_resolver import DatatypeResolver
+from data_types.resolver import DatatypeResolver
 
 
 def xml_get_tag_content(

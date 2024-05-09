@@ -2,6 +2,13 @@ import json
 from lxml import etree as ET
 from pathlib import Path
 
+"""
+This function parses the XML file and extracts the element names and their data types.
+The data types are stored in a dictionary where the key is the element name and the value is the data type.
+Then the dictionary is stored in a JSON file.
+Under normal circumstances this does not need to be run again.
+"""
+
 
 def parse_file(file_path: Path) -> dict:
     # Parse the XML string

@@ -3,7 +3,7 @@ from typing import Optional
 from lxml import etree as ET
 
 from models.types import StatusType, SystemType, ManholeFormType, MaterialType
-from parser.shared import try_match_enum, xml_element_to_dict, xml_get_tag_content
+from isybau.lib import try_match_enum, xml_element_to_dict, xml_get_tag_content
 
 
 @dataclass
