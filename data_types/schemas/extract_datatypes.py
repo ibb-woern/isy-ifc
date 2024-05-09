@@ -25,6 +25,9 @@ def parse_file(file_path: Path) -> dict:
         # process elements which have the type directly attachted as attribute
         if "type" in element.attrib:
             data_type = element.attrib["type"].split(":")[-1]
+            # Skip non simple types
+            if data_type.endswith("Type"):
+                continue
             element_data_types[name] = data_type
             continue
         # Check if there is a child element simpleType
@@ -36,6 +39,9 @@ def parse_file(file_path: Path) -> dict:
                 .attrib["base"]
                 .split(":")[-1]
             )
+            # Skip non simple types
+            if data_type.endswith("Type"):
+                continue
             element_data_types[name] = data_type
 
     return element_data_types
@@ -43,40 +49,27 @@ def parse_file(file_path: Path) -> dict:
 
 data_types = {}
 script_dir = Path(__file__).resolve().parent
-files = [
-    "1707-betriebsdaten.xsd",
-    "1707-hydraulikdaten.xsd",
-    "1707-metadaten.xsd",
-    "1707-praesentationsdaten.xsd",
-    "1707-referenzlisten.xsd",
-    "1707-stammdaten.xsd",
-    "1707-zustandsdaten.xsd",
-]
+files = list(script_dir.glob("*.xsd"))
+
 for file in files:
-    xml_file = script_dir / "schemas" / file
-    file_data_types = parse_file(xml_file)
+    file_data_types = parse_file(file)
     data_types.update(file_data_types)
 
-# This is to manually double check if there are custom datatypes missing
-distinct_data_types = set(data_types.values())
-
 patches = {
-    "LagestufeType": "string",
-    "HoehenstufeType": "string",
-    "BehandlungsartType": "integer",
-    "PunktattributAbwasserType": "string",
-    "UntersuchungBodenType": "integer",
-    "PraesentationsdatentypType": "string",
-    "StammdatentypType": "string",
+    "gYearMonth": "string",
     "token": "string",
+    "gYear": "integer",
+    "Time": "string",
 }
+
 
 for dt in data_types.items():
     if dt[1] in patches.keys():
         data_types[dt[0]] = patches[dt[1]]
 
-distinct_data_types = set(data_types.values())
-print(distinct_data_types)
+# Useful for debugging
+# distinct_data_types = set(data_types.values())
 
-with open(script_dir / "data_types.json", "w") as f:
+
+with open(Path(__file__).resolve().parent.parent / "data_types.json", "w") as f:
     json.dump(data_types, f, indent=4)
