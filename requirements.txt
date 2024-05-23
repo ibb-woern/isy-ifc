@@ -1,8 +1,7 @@
 ifcopenshell
+bpy
 numpy
 lark
-mathutils
 click
 lxml
-openpyxl
 xmltodict
