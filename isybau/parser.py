@@ -1,55 +1,39 @@
+import json
 import os
-import tempfile
-from pathlib import Path
-from typing import List
-from lxml import etree as ET
-from lxml import objectify
+import xmltodict
+from typing import List, Any, Dict
+
 from models.manhole import Manhole
 from models.sewer import Sewer
-
-
-def remove_namespace(file: os.PathLike) -> os.PathLike:
-    parser = ET.XMLParser(remove_blank_text=True)
-    tree = ET.parse(file, parser)
-    root = tree.getroot()
-
-    for elem in root.getiterator():
-        if not hasattr(elem.tag, "find"):
-            continue  # guard for Comment tags
-        i = elem.tag.find("}")
-        if i >= 0:
-            elem.tag = elem.tag[i + 1 :]
-    objectify.deannotate(root, cleanup_namespaces=True)
-
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_file_path = Path(temp_file.name)  # Convert to Path object
-    temp_file_path = temp_file_path.parent / Path(file).name  # Append original filename
-    tree.write(
-        temp_file_path,
-        pretty_print=True,
-        xml_declaration=True,
-        encoding="UTF-8",
-    )
-    return temp_file_path
+from data_types import resolver
 
 
 def parse(file_path: os.PathLike) -> tuple:
-    tree = ET.parse(remove_namespace(file_path))
-    root = tree.getroot()
     manholes: List[Manhole] = []
     sewers: List[Sewer] = []
-    # Maholes needs to be parsed first to map them in the pipe sections
-    for element in root.iter("AbwassertechnischeAnlage"):
-        objektart = int(element.find("Objektart").text)
-        if objektart == 2:
-            manhole = Manhole.from_xml_element(element)
-            if manhole:
-                manholes.append(manhole)
+    with open(file_path, "r", encoding="iso-8859-1") as f:
+        xml_data = f.read()
 
-    for element in root.iter("AbwassertechnischeAnlage"):
-        objektart = int(element.find("Objektart").text)
-        if objektart == 1:
-            sewer = Sewer.from_xml_element(element, manholes)
-            if sewer:
-                sewers.append(sewer)
+    data = xmltodict.parse(xml_data)
+
+    dt_resolver = resolver.DatatypeResolver()
+
+    def deep_convert(data: Dict[str, Any]) -> Dict[str, Any]:
+        """Recursively iterates through a dictionary and converts data types."""
+        converted_data = {}
+        for key, value in data.items():
+            if isinstance(value, dict):
+                converted_data[key] = deep_convert(value)
+            else:
+                converted_data[key] = dt_resolver.resolve(key, value)
+        return converted_data
+
+    # Deep convert the parsed data
+    converted_data = deep_convert(data)
+    # encode the converted data to UTF-8
+    # converted_data = converted_data.encode("utf-8")
+
+    with open("converted_data.json", "w", encoding="utf8") as json_file:
+        json.dump(converted_data, json_file, indent=2, ensure_ascii=False)
+
     return manholes, sewers
