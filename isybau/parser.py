@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import xmltodict
@@ -25,9 +24,6 @@ def detect_xml_encoding(file_path: os.PathLike) -> str:
 
 
 def parse(file_path: os.PathLike) -> tuple:
-    manholes: List[Manhole] = []
-    sewers: List[Sewer] = []
-
     encoding = detect_xml_encoding(file_path)
     with open(file_path, "r", encoding=encoding) as f:
         xml_data = f.read()
@@ -61,9 +57,25 @@ def parse(file_path: os.PathLike) -> tuple:
         return converted_data
 
     # Convert the data to the correct data types
-    converted_data = deep_convert(data)
+    data = deep_convert(data)
 
-    with open("converted_data.json", "w", encoding="utf8") as json_file:
-        json.dump(converted_data, json_file, indent=2, ensure_ascii=False)
+    project: Dict = data["Identifikation"]["Admindaten"]
+    manholes: List[Dict] = []
+    sewers: List[Dict] = []
+    for a in data["Identifikation"]["Datenkollektive"]["Stammdatenkollektiv"][
+        "AbwassertechnischeAnlage"
+    ]:
+        if a["Objektart"] == "1":
+            sewers.append(a)
+            continue
+        if a["Objektart"] == "2":
+            manholes.append(a)
+            continue
 
-    return manholes, sewers
+    """
+    # For debugging purposes, write the converted data to a JSON file
+    with open("data.json", "w", encoding="utf8") as json_file:
+        json.dump(data, json_file, indent=2, ensure_ascii=False)
+    """
+
+    return project, manholes, sewers

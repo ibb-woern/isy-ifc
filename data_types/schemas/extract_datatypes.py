@@ -1,5 +1,5 @@
 import json
-from lxml import etree as ET
+import xmltodict
 from pathlib import Path
 
 """
@@ -11,38 +11,41 @@ Under normal circumstances this does not need to be run again.
 
 
 def parse_file(file_path: Path) -> dict:
-    # Parse the XML string
-    root = ET.parse(file_path).getroot()
+    # For now skip certain files
+    to_skip = ["metadaten", "zustandstaten"]
+    if any(x in str(file_path) for x in to_skip):
+        return {}
 
-    # Dictionary to store element names and their data types
     element_data_types = {}
-    for element in root.iter():
-        name = None
-        if element.tag == "{http://www.w3.org/2001/XMLSchema}element":
-            name = element.attrib["name"]
-        if name is None:
-            continue
-        # process elements which have the type directly attachted as attribute
-        if "type" in element.attrib:
-            data_type = element.attrib["type"].split(":")[-1]
-            # Skip non simple types
-            if data_type.endswith("Type"):
+
+    with open(file_path, "r", encoding="ISO-8859-1") as f:
+        xml_data = f.read()
+        # remove "xsd:" substring
+        xml_data = xml_data.replace("xsd:", "")
+
+    data = xmltodict.parse(xml_data)
+
+    # Process simpleTypes
+    if "simpleType" in data["schema"]:
+        for simple_type in data["schema"]["simpleType"]:
+            element_data_types[simple_type["@name"]] = simple_type["restriction"][
+                "@base"
+            ]
+
+    # Process complexTypes
+    if "complexType" in data["schema"]:
+        for complex_type in data["schema"]["complexType"]:
+            # If name attribute ends with "Type" skip it, because it's defined in the simpleTypes
+            if complex_type["@name"].endswith("Type"):
                 continue
-            element_data_types[name] = data_type
-            continue
-        # Check if there is a child element simpleType
-        if element.find("{http://www.w3.org/2001/XMLSchema}simpleType") is not None:
-            # Get the data type from the child element
-            data_type = (
-                element.find("{http://www.w3.org/2001/XMLSchema}simpleType")
-                .find("{http://www.w3.org/2001/XMLSchema}restriction")
-                .attrib["base"]
-                .split(":")[-1]
-            )
-            # Skip non simple types
-            if data_type.endswith("Type"):
-                continue
-            element_data_types[name] = data_type
+            if "sequence" in complex_type:
+                for element in complex_type["sequence"]["element"]:
+                    element_data_types[element["@name"]] = element["@type"]
+            if "complexContent" in complex_type:
+                for element in complex_type["complexContent"]["extension"]["sequence"][
+                    "element"
+                ]:
+                    element_data_types[element["@name"]] = element["@type"]
 
     return element_data_types
 
@@ -66,10 +69,6 @@ patches = {
 for dt in data_types.items():
     if dt[1] in patches.keys():
         data_types[dt[0]] = patches[dt[1]]
-
-# Useful for debugging
-# distinct_data_types = set(data_types.values())
-
 
 with open(Path(__file__).resolve().parent.parent / "data_types.json", "w") as f:
     json.dump(data_types, f, indent=4)

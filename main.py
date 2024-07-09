@@ -11,8 +11,9 @@ from pathlib import Path
 def main(input_file: Path, output_file: Path = None):
     # Check if the file is an XML file. if so call the isybau parser
     if input_file.suffix == ".xml":
-        manholes, sewers = parser.parse(input_file)
+        project, manholes, sewers = parser.parse(input_file)
         model, body = bootstrap.setup()
+        exit()
         for manhole in manholes:
             entity_creator.manhole(manhole, model, body)
         for sewer in sewers:
